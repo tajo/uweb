@@ -15,9 +15,9 @@ export const activate = async (context: vscode.ExtensionContext) => {
   let recentItems: vscode.QuickPickItem[] = [];
 
   const addToRecentItems = (item: vscode.QuickPickItem) => {
-    recentItems = recentItems.filter(
-      (recentItem) => recentItem.label !== item.label
-    );
+    recentItems = recentItems
+      .filter((recentItem) => recentItem.label !== item.label)
+      .slice(0, 4);
     recentItems.unshift(item);
   };
 
@@ -51,7 +51,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
               label: "recent projects",
               kind: vscode.QuickPickItemKind.Separator,
             },
-            ...recentItems.slice(0, 5),
+            ...recentItems,
             { label: "", kind: vscode.QuickPickItemKind.Separator },
             ...items.filter((item: vscode.QuickPickItem) =>
               recentItems.every((recentItem) => recentItem.label !== item.label)
