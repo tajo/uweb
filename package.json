@@ -1,8 +1,12 @@
 {
-  "name": "uweb",
+  "name": "uweb-web-code",
+  "repository": "git@github.com:tajo/uweb.git",
+  "author": "Vojtech Miksu <vojtech@miksu.cz>",
+  "license": "MIT",
+  "publisher": "voytuh",
   "displayName": "uweb",
   "description": "Make navigation in web-code easier.",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.67.0"
   },

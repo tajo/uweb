@@ -12,6 +12,14 @@ export const activate = async (context: vscode.ExtensionContext) => {
   }
   const webCodePath = process.env.WEB_CODE_PATH || "";
   let items: vscode.QuickPickItem[] = [];
+  let recentItems: vscode.QuickPickItem[] = [];
+
+  const addToRecentItems = (item: vscode.QuickPickItem) => {
+    recentItems = recentItems.filter(
+      (recentItem) => recentItem.label !== item.label
+    );
+    recentItems.unshift(item);
+  };
 
   const populateProjects = () => {
     if (!items.length) {
@@ -36,10 +44,29 @@ export const activate = async (context: vscode.ExtensionContext) => {
 
   const pickProject = async () => {
     populateProjects();
-    const picked = await vscode.window.showQuickPick(items, {
-      canPickMany: false,
-      matchOnDescription: true,
-    });
+    const picked = await vscode.window.showQuickPick(
+      recentItems.length
+        ? [
+            {
+              label: "recent projects",
+              kind: vscode.QuickPickItemKind.Separator,
+            },
+            ...recentItems.slice(0, 5),
+            { label: "", kind: vscode.QuickPickItemKind.Separator },
+            ...items.filter((item: vscode.QuickPickItem) =>
+              recentItems.every((recentItem) => recentItem.label !== item.label)
+            ),
+          ]
+        : items,
+      {
+        canPickMany: false,
+        matchOnDescription: true,
+        placeHolder: "Search web-code projects...",
+      }
+    );
+    if (picked) {
+      addToRecentItems(picked);
+    }
     return picked;
   };
 
