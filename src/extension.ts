@@ -78,8 +78,8 @@ export const activate = async (context: vscode.ExtensionContext) => {
         if (picked && picked.description && picked.label) {
           const projectPath = path.join(webCodePath, picked.description);
           const newUri = vscode.Uri.file(projectPath);
-          vscode.commands.executeCommand("list.collapseAll");
-          vscode.commands.executeCommand("revealInExplorer", newUri);
+          await vscode.commands.executeCommand("list.collapseAll");
+          await vscode.commands.executeCommand("revealInExplorer", newUri);
           const terminal = vscode.window.createTerminal({
             name: picked.label,
             cwd: projectPath,
@@ -93,8 +93,8 @@ export const activate = async (context: vscode.ExtensionContext) => {
       if (picked && picked.description && picked.label) {
         const projectPath = path.join(webCodePath, picked.description);
         const newUri = vscode.Uri.file(projectPath);
-        vscode.commands.executeCommand("list.collapseAll");
-        vscode.commands.executeCommand("revealInExplorer", newUri);
+        await vscode.commands.executeCommand("list.collapseAll");
+        await vscode.commands.executeCommand("revealInExplorer", newUri);
       }
     }),
     vscode.commands.registerCommand("uweb.focusTerminal", async () => {
