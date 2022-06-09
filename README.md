@@ -2,7 +2,7 @@
 
 Makes the navigation in `web-code` easier, adding a few commands. If your workflow is to open a VS Code instance for each individual project, this extension is not going to that useful.
 
-The `WEB_CODE_ENV` env variable needs to be set and pointing to the root of `web-code` and VS Code should be opened with the root of web-code. You should add it to your `~/.zshrc`.
+The `WEB_CODE_PATH` env variable needs to be set and pointing to the root of `web-code` and VS Code should be opened with the root of web-code. You should add it to your `~/.zshrc`.
 
 ## uweb: Focus Explorer
 
