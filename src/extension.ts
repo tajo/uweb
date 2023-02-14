@@ -107,6 +107,30 @@ export const activate = async (context: vscode.ExtensionContext) => {
         });
         terminal.show();
       }
+    }),
+    vscode.commands.registerCommand("uweb.openSourcegraph", async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (editor) {
+        const filePath = editor.document.uri.fsPath;
+        if (!filePath.startsWith(webCodePath)) {
+          return;
+        }
+        const srcPath = filePath.replace(webCodePath, "");
+        const start = editor.selection.start.line;
+        const end = editor.selection.end.line;
+        let loc = "";
+        if (start) {
+          loc = `#L${start + 1}`;
+        }
+        if (end && end !== start) {
+          loc += `-${end + 1}`;
+        }
+        vscode.env.openExternal(
+          vscode.Uri.parse(
+            `https://sourcegraph.uberinternal.com/code.uber.internal/web-code/-/blob${srcPath}${loc}`
+          )
+        );
+      }
     })
   );
 };

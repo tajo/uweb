@@ -13,11 +13,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "onCommand:uweb.focusTerminal",
-    "onCommand:uweb.focusExplorer",
-    "onCommand:uweb.focusExplorerAndTerminal"
-  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -32,6 +27,10 @@
       {
         "command": "uweb.focusExplorerAndTerminal",
         "title": "uweb: Focus Explorer and Terminal"
+      },
+      {
+        "command": "uweb.openSourcegraph",
+        "title": "uweb: Open Sourcegraph for the current file"
       }
     ]
   },
