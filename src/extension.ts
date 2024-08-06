@@ -2,15 +2,29 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
+import { downloadSnapshot } from "./vscli";
+import getRepoRoot from "./repo-root";
+
+let openWebviews = new Map();
+
+class SnapshotContentProvider implements vscode.TextDocumentContentProvider {
+  provideTextDocumentContent(uri: vscode.Uri): string | Thenable<string> {
+    return new Promise((resolve, reject) => {
+      fs.readFile(uri.fsPath, "utf8", (err, data) => {
+        if (err) {
+          return reject(err);
+        }
+
+        const imageUrl = data.trim();
+        const htmlContent = `<html><body><img src="${imageUrl}" /></body></html>`;
+        resolve(htmlContent);
+      });
+    });
+  }
+}
 
 export const activate = async (context: vscode.ExtensionContext) => {
-  if (!process.env.WEB_CODE_PATH) {
-    vscode.window.showInformationMessage(
-      "You must set env variable WEB_CODE_PATH first!"
-    );
-    return;
-  }
-  const webCodePath = process.env.WEB_CODE_PATH || "";
   let items: vscode.QuickPickItem[] = [];
   let recentItems: vscode.QuickPickItem[] = [];
 
@@ -21,9 +35,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
     recentItems.unshift(item);
   };
 
-  const populateProjects = () => {
+  const populateProjects = async () => {
     if (!items.length) {
       try {
+        const webCodePath = await getRepoRoot();
         const packages = require(`${webCodePath}/package.json`).workspaces;
         items = packages
           .map((pkg: string) => {
@@ -43,7 +58,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
   };
 
   const pickProject = async () => {
-    populateProjects();
+    await populateProjects();
     const picked = await vscode.window.showQuickPick(
       recentItems.length
         ? [
@@ -71,11 +86,62 @@ export const activate = async (context: vscode.ExtensionContext) => {
   };
 
   context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(async (document) => {
+      const fileName = document.fileName;
+      if (
+        fileName.endsWith(".snapshot") &&
+        fileName.includes("__visual_snapshots__")
+      ) {
+        const webCodePath = await getRepoRoot();
+        if (webCodePath === "") {
+          return;
+        }
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+        if (openWebviews.has(fileName)) {
+          const panel = openWebviews.get(fileName);
+          panel.reveal(vscode.ViewColumn.One);
+        } else {
+          const content = document.getText();
+          const contentParts = content.trim().split("/");
+          const imageName = `${contentParts[contentParts.length - 1]}.png`;
+          const parts = fileName.split("/");
+
+          const panel = vscode.window.createWebviewPanel(
+            "snapshotWebview",
+            parts[parts.length - 1],
+            vscode.ViewColumn.One,
+            {
+              enableScripts: true,
+              localResourceRoots: [
+                vscode.Uri.file(
+                  path.join(webCodePath, "artifacts/__visual_snapshots__")
+                ),
+              ],
+            }
+          );
+          panel.onDidDispose(() => {
+            openWebviews.delete(fileName);
+          });
+          openWebviews.set(fileName, panel);
+          const link = `<p><a href="${content}" style="color: var(--vscode-foreground)">Open in browser</a></p>`;
+          panel.webview.html = link;
+          const imagePath = await downloadSnapshot(imageName);
+          const imageUri = panel.webview.asWebviewUri(
+            vscode.Uri.file(imagePath)
+          );
+          panel.webview.html = `${link}<img src="${imageUri}" />`;
+        }
+      }
+    }),
     vscode.commands.registerCommand(
       "uweb.focusExplorerAndTerminal",
       async () => {
         const picked = await pickProject();
         if (picked && picked.description && picked.label) {
+          const webCodePath = await getRepoRoot();
+          if (webCodePath === "") {
+            return;
+          }
           const projectPath = path.join(webCodePath, picked.description);
           const newUri = vscode.Uri.file(projectPath);
           await vscode.commands.executeCommand("list.collapseAll");
@@ -91,6 +157,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
     vscode.commands.registerCommand("uweb.focusExplorer", async () => {
       const picked = await pickProject();
       if (picked && picked.description && picked.label) {
+        const webCodePath = await getRepoRoot();
+        if (webCodePath === "") {
+          return;
+        }
         const projectPath = path.join(webCodePath, picked.description);
         const newUri = vscode.Uri.file(projectPath);
         await vscode.commands.executeCommand("list.collapseAll");
@@ -100,6 +170,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
     vscode.commands.registerCommand("uweb.focusTerminal", async () => {
       const picked = await pickProject();
       if (picked && picked.description && picked.label) {
+        const webCodePath = await getRepoRoot();
+        if (webCodePath === "") {
+          return;
+        }
         const projectPath = path.join(webCodePath, picked.description);
         const terminal = vscode.window.createTerminal({
           name: picked.label,
@@ -112,6 +186,10 @@ export const activate = async (context: vscode.ExtensionContext) => {
       const editor = vscode.window.activeTextEditor;
       if (editor) {
         const filePath = editor.document.uri.fsPath;
+        const webCodePath = await getRepoRoot();
+        if (webCodePath === "") {
+          return;
+        }
         if (!filePath.startsWith(webCodePath)) {
           return;
         }
@@ -127,7 +205,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
         }
         vscode.env.openExternal(
           vscode.Uri.parse(
-            `https://sourcegraph.uberinternal.com/code.uber.internal/web-code/-/blob${srcPath}${loc}`
+            `https://sg.uberinternal.com/code.uber.internal/uber-code/web-code/-/blob${srcPath}${loc}`
           )
         );
       }

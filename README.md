@@ -1,8 +1,16 @@
 # uweb: web-code extension
 
-Makes the navigation in `web-code` easier, adding a few commands. If your workflow is to open a VS Code instance for each individual project, this extension is not going to that useful.
+- Turns `__visual_snapshot__/*.snapshot` files into images (requires an active ussh session).
+- Multiple commands to jumping between `web-code` projects faster.
+- Quick jump into SourceGraph from any file/line of code.
 
-The `WEB_CODE_ENV` env variable needs to be set and pointing to the root of `web-code` and VS Code should be opened with the root of web-code. You should add it to your `~/.zshrc`.
+This extension works only if the web-code workspace (or a nested workspace) is open since it needs to locate the monorepo root. You can also set it manually through the `WEB_CODE_ENV` envirnoment variable (add it to you `~/.zshrc`).
+
+## uweb: Open Sourcegraph for the current file
+
+`uweb.openSourcegraph`
+
+Opens the file in Sourcegraph including the selected line(s) of code.
 
 ## uweb: Focus Explorer
 
