@@ -6,7 +6,7 @@
   "publisher": "voytuh",
   "displayName": "uweb",
   "description": "Enhancing the web-code experience.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "engines": {
     "vscode": "^1.67.0"
   },

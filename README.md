@@ -1,6 +1,6 @@
 # uweb: web-code extension
 
-- Turns `__visual_snapshot__/*.snapshot` files into images (requires an active ussh session).
+- Turns `__visual_snapshots__/*.snapshot` files into images (requires an active ussh session).
 - Multiple commands to jumping between `web-code` projects faster.
 - Quick jump into SourceGraph from any file/line of code.
 
